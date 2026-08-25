@@ -98,4 +98,14 @@ function test_WithdrawWithInsufficientRewardPool() public {
     // rewardPool = 0 edi, demak reward berilmagan, faqat amount qaytgan
     assertEq(token.balanceOf(user1), 900e18 + 100e18);
 }
+function test_SetRewardRate_Owner() public {
+    // owner (test kontraktining o'zi, chunki setUp()da staking = new StakingContract(...) address(this) nomidan chaqirilgan)
+    staking.setRewardRate(1e8);
+    assertEq(staking.rewardRate(), 1e8);  }
+
+function test_RevertWhen_SetRewardRate_NotOwner() public {
+    vm.prank(user1);
+    vm.expectRevert("Not the owner");
+     staking.setRewardRate(1e10); 
+}
 }

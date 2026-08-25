@@ -18,15 +18,23 @@ contract StakingContract {
     uint256 public rewardPool;
     uint256 public rewardRate;
     uint256 public constant PRECISION = 1e18;
+    address public owner;
+    modifier onlyOwner() {
+    require(msg.sender == owner, "Not the owner");
+    _;
+}
 
     event Staked(address indexed user, uint256 amount);
     event RewardsFunded(address indexed funder, uint256 amount);
-event Withdrawn(address indexed user, uint256 amount, uint256 expectedReward, uint256 actualReward);
+    event Withdrawn(address indexed user, uint256 amount, uint256 expectedReward, uint256 actualReward);
     constructor(address _stakingToken, uint256 _rewardRate) {
         stakingToken = IERC20(_stakingToken);
         rewardRate = _rewardRate;
+        owner = msg.sender;
     }
-
+    function setRewardRate(uint256 newRate) external onlyOwner {
+    rewardRate = newRate;
+}
     function stake(uint256 amount) external {
         require(amount > 0, "Invalid amount");
         require(stakingToken.transferFrom(msg.sender, address(this), amount), "Transfer failed");
