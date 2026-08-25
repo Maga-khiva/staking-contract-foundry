@@ -108,4 +108,14 @@ function test_RevertWhen_SetRewardRate_NotOwner() public {
     vm.expectRevert("Not the owner");
      staking.setRewardRate(1e10); 
 }
+
+function test_TransferOwnership() public {
+    staking.transferOwnership(user1);
+    assertEq(staking.owner(), user1);
+}
+
+function test_RevertWhen_TransferOwnershipToZeroAddress() public {
+    vm.expectRevert("New owner cannot be zero address");
+    staking.transferOwnership(address(0));
+}
 }

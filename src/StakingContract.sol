@@ -35,6 +35,12 @@ contract StakingContract {
     function setRewardRate(uint256 newRate) external onlyOwner {
     rewardRate = newRate;
 }
+
+function transferOwnership(address newOwner) external onlyOwner {
+    require(newOwner != address(0), "New owner cannot be zero address");
+    owner = newOwner;
+}
+
     function stake(uint256 amount) external {
         require(amount > 0, "Invalid amount");
         require(stakingToken.transferFrom(msg.sender, address(this), amount), "Transfer failed");
