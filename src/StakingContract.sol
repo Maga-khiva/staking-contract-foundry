@@ -7,7 +7,7 @@ interface IERC20 {
 }
 
 contract StakingContract {
-    IERC20 public stakingToken;
+IERC20 public immutable STAKING_TOKEN;
 
     struct Stake {
         uint256 amount;
@@ -19,8 +19,12 @@ contract StakingContract {
     uint256 public rewardRate;
     uint256 public constant PRECISION = 1e18;
     address public owner;
-    modifier onlyOwner() {
+    function _onlyOwner() internal view {
     require(msg.sender == owner, "Not the owner");
+}
+
+modifier onlyOwner() {
+    _onlyOwner();
     _;
 }
 
@@ -28,7 +32,7 @@ contract StakingContract {
     event RewardsFunded(address indexed funder, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount, uint256 expectedReward, uint256 actualReward);
     constructor(address _stakingToken, uint256 _rewardRate) {
-        stakingToken = IERC20(_stakingToken);
+        STAKING_TOKEN = IERC20(_stakingToken);
         rewardRate = _rewardRate;
         owner = msg.sender;
     }
@@ -43,7 +47,7 @@ function transferOwnership(address newOwner) external onlyOwner {
 
     function stake(uint256 amount) external {
         require(amount > 0, "Invalid amount");
-        require(stakingToken.transferFrom(msg.sender, address(this), amount), "Transfer failed");
+        require(STAKING_TOKEN.transferFrom(msg.sender, address(this), amount), "Transfer failed");
         stakes[msg.sender].push(
             Stake({amount: amount, timestamp: block.timestamp})
         );
@@ -52,28 +56,33 @@ function transferOwnership(address newOwner) external onlyOwner {
 
     function fundRewards(uint256 amount) external {
         require(amount > 0, "inappropriate amount");
-        require(stakingToken.transferFrom(msg.sender, address(this), amount), "Transfer failed");
+        require(STAKING_TOKEN.transferFrom(msg.sender, address(this), amount), "Transfer failed");
         rewardPool += amount;
         emit RewardsFunded(msg.sender, amount);
     }
 
     function withdraw(uint256 index) external {
-        require(index < stakes[msg.sender].length, "Invalid index");
-        Stake memory userStake = stakes[msg.sender][index];
-        uint256 amount = userStake.amount;
-        uint256 elapsedTime = block.timestamp - userStake.timestamp;
-        uint256 reward = amount * elapsedTime * rewardRate / PRECISION;
-        uint256 expectedReward = reward; // cheklashdan oldingi asl qiymat
-        stakes[msg.sender][index] = stakes[msg.sender][stakes[msg.sender].length - 1];
-        stakes[msg.sender].pop();
-        if (reward > rewardPool) {
-          reward = rewardPool;
-         }
-        rewardPool -= reward;
+    Stake[] storage userStakes = stakes[msg.sender];
+    require(index < userStakes.length, "Invalid index");
+    
+    Stake memory userStake = userStakes[index];
+    uint256 amount = userStake.amount;
+    uint256 elapsedTime = block.timestamp - userStake.timestamp;
+    uint256 reward = amount * elapsedTime * rewardRate / PRECISION;
+    uint256 expectedReward = reward;
+    
+    userStakes[index] = userStakes[userStakes.length - 1];
+    userStakes.pop();
+    
+    if (reward > rewardPool) {
+        reward = rewardPool;
+    }
+    rewardPool -= reward;
 
-        require(
-        stakingToken.transfer(msg.sender, amount + reward),
+    require(
+        STAKING_TOKEN.transfer(msg.sender, amount + reward),
         "Transfer failed"
-);
-     emit Withdrawn(msg.sender, amount, expectedReward, reward);    }
+    );
+    emit Withdrawn(msg.sender, amount, expectedReward, reward);
+}
 }
