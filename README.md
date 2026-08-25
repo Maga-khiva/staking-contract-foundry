@@ -1,66 +1,45 @@
-## Foundry
+# Staking Contract
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+A Solidity staking contract that lets users stake ERC20 tokens and earn time-based rewards, built and tested with Foundry.
 
-Foundry consists of:
+## Overview
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+Users stake tokens, and rewards accrue linearly based on how long each stake has been active. The contract owner (or anyone) funds a reward pool separately from the staking mechanism, keeping user principal and protocol rewards cleanly separated.
 
-## Documentation
+## Features
 
-https://book.getfoundry.sh/
+- **Stake** — deposit ERC20 tokens, tracked per-user with individual timestamps
+- **Fund Rewards** — top up the reward pool independently of staking
+- **Withdraw** — returns principal + accrued reward; reward is capped to whatever remains in the pool, so a user's principal is never locked even if the pool runs dry
 
-## Usage
+## Security
 
-### Build
+- **Checks-Effects-Interactions pattern** in `withdraw()` — state is updated (array pop, reward pool deduction) *before* the external token transfer, preventing reentrancy
+- **Reentrancy tested directly** — `test/MaliciousToken.sol` simulates a malicious ERC20 that attempts to re-enter `withdraw()` during the transfer callback; the attack correctly reverts
+- **Reward pool depletion handled gracefully** — if accrued reward exceeds the pool, the user still receives their full principal plus whatever reward is available, rather than reverting and locking their funds
+- **Transfer return values checked** — all ERC20 transfers use `require()` to guard against tokens that fail silently instead of reverting
 
-```shell
-$ forge build
+## Tests
+
+6 Foundry tests covering the core paths:
+
+| Test | Purpose |
+|---|---|
+| `test_Stake` | Verifies staking updates balances and storage correctly |
+| `test_Withdraw` | Full withdraw flow: principal + reward calculation |
+| `test_WithdrawWithInsufficientRewardPool` | Confirms principal is never locked, even with an empty reward pool |
+| `test_RevertWhen_InvalidIndex` | Rejects withdrawals on non-existent stakes |
+| `test_RevertWhen_StakeZeroAmount` | Rejects zero-amount stakes |
+| `test_ReentrancyProtection` | Simulates a live reentrancy attack via a malicious token and confirms it fails |
+
+## Running locally
+
+```bash
+forge build
+forge test -vvv
 ```
 
-### Test
+## Stack
 
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+- Solidity ^0.8.20
+- Foundry (forge)
