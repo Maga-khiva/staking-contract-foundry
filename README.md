@@ -104,7 +104,7 @@ A React + TypeScript UI for interacting with the deployed contract:
 ## Live Demo
 
 [View the live app](https://vaultstakingdapp.netlify.app/)
-
+![alt text](image-1.png)
 ## Stack
 
 - Solidity ^0.8.20
