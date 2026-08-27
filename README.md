@@ -103,7 +103,7 @@ A React + TypeScript UI for interacting with the deployed contract:
 
 ## Live Demo
 
-[View the live app](DEPLOY_LINKINI_BU_YERGA_QOYASIZ)
+[View the live app](https://vaultstakingdapp.netlify.app/)
 
 ## Stack
 
