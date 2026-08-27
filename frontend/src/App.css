@@ -44,6 +44,7 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   transition: background 0.2s ease, color 0.2s ease;
+   zoom: 0.9; 
 }
 
 .page {
@@ -51,8 +52,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-}
+overflow-x: hidden; }
 
 .grid-overlay {
   position: fixed;
