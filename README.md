@@ -89,6 +89,22 @@ npm run dev
 
 Requires MetaMask connected to Sepolia testnet.
 
+## Frontend
+
+A React + TypeScript UI for interacting with the deployed contract:
+
+- **Wallet connect** — MetaMask integration with auto-reconnect on page reload and live account-change detection
+- **Mint test tokens** — mints MockERC20 for testing on Sepolia
+- **Stake** — handles the approve + stake flow in sequence
+- **Open positions** — lists each stake individually (not just the first), with a dedicated withdraw button per position, since the contract's swap-and-pop removal means position indices shift after each withdrawal
+- **Live balance display** — wallet balance and total staked amount update automatically after every transaction
+- **Dark/light theme** — follows system preference automatically, with a manual toggle
+- **Responsive** — works down to mobile viewport widths
+
+## Live Demo
+
+[View the live app](DEPLOY_LINKINI_BU_YERGA_QOYASIZ)
+
 ## Stack
 
 - Solidity ^0.8.20
